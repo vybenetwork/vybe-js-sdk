@@ -42,7 +42,7 @@ export async function checkTokenBalance(senderTokenAccount: PublicKey, amount: n
         // Fetch the token account balance
         const accountInfo = await connection.getAccountInfo(senderTokenAccount);
         if (!accountInfo) {
-            console.error('Failed to find the token account');
+            console.error('[VybeSDK] Failed to find the token account');
             return false;
         }
 

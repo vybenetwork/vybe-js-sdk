@@ -1,4 +1,4 @@
-import { BlockheightBasedTransactionConfirmationStrategy, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { BlockheightBasedTransactionConfirmationStrategy, ComputeBudgetProgram, Connection, PublicKey, SendOptions, Transaction, VersionedTransaction } from "@solana/web3.js";
 import { loadAuthData, storeAuthData } from "./store";
 import { isBrowser, resolver } from "./utils";
 import { AUTH_ENDPOINT, AUTH_MSG, AuthFailedError, CREDITS_PRICE_USDC, CreditPurchaseError, InsufficientBalanceError, NotAuthenticatedError, PURCHASE_ENDPOINT, TxConfirmationError, USDC_MINT } from "./constants";
@@ -78,27 +78,43 @@ async function submitTx(adapter: Adapter, connection: Connection): Promise<strin
   if (!adapter.publicKey) throw new WalletNotConnectedError()
 
   const senderTokenAccount = getSPLTokenAccount(adapter.publicKey, USDC_MINT)
-  const hasSufficientBalance = await checkTokenBalance(senderTokenAccount, CREDITS_PRICE_USDC, connection)
 
+  const hasSufficientBalance = await checkTokenBalance(senderTokenAccount, CREDITS_PRICE_USDC, connection)
   if (!hasSufficientBalance) throw new InsufficientBalanceError()
 
-  const tx = new Transaction().add(
-    createCreditPurchaseInstruction(adapter.publicKey, senderTokenAccount)
-  )
+  const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({ 
+    units: 1000000
+  });
+
+  const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({ 
+    microLamports: 10000000
+  });
+
+  const tx = new Transaction()
+    .add(modifyComputeUnits)
+    .add(addPriorityFee)
+    .add(
+      createCreditPurchaseInstruction(adapter.publicKey, senderTokenAccount)
+    )
 
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized')
   tx.recentBlockhash = blockhash
+  tx.lastValidBlockHeight = lastValidBlockHeight
   tx.feePayer = adapter.publicKey
-
-  console.log(blockhash, lastValidBlockHeight)
 
   // Sign the TX
   const signedTx = await (adapter as BaseSignerWalletAdapter).signTransaction(tx)
-  // Submit the TX
-  const [err, txId] = await resolver(connection.sendRawTransaction(signedTx.serialize()))
-  if (err) throw err
 
-  console.log(txId)
+  const sendOptions: SendOptions = {
+    maxRetries: 2,
+    minContextSlot: (await connection.getSlot()),
+    skipPreflight: false,
+    preflightCommitment: 'finalized'
+  }
+
+  // Submit the TX
+  const [err, txId] = await resolver(connection.sendRawTransaction(signedTx.serialize(), sendOptions))
+  if (err) throw err
 
   const confirmationStrategy: BlockheightBasedTransactionConfirmationStrategy = {
       signature: txId!,
@@ -108,7 +124,7 @@ async function submitTx(adapter: Adapter, connection: Connection): Promise<strin
 
   const [terr, confirmation] = await resolver(connection.confirmTransaction(confirmationStrategy, 'confirmed'))
 
-  if (terr || !confirmation || confirmation.value.err) {
+  if (terr || !confirmation || confirmation?.value.err) {
     throw new TxConfirmationError(terr?.message || confirmation?.value.err?.toString() || 'Tx confirmation failed.')
   }
 
