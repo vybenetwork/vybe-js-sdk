@@ -1,0 +1,42 @@
+{
+  "name": "vybe-js-sdk",
+  "version": "0.1.0",
+  "description": "Access the Vybe API with Web3 enabled authentication.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vybenetwork/vybe-js-sdk.git"
+  },
+  "keywords": [
+    "Vybe",
+    "Network",
+    "Solana",
+    "Web3",
+    "API"
+  ],
+  "files": [
+    "dist/**/*"
+  ],
+  "author": "Vybe Network",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vybenetwork/vybe-js-sdk/issues"
+  },
+  "homepage": "https://github.com/vybenetwork/vybe-js-sdk#readme",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  },
+  "peerDependencies": {
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/web3.js": "^1.91.4"
+  },
+  "dependencies": {
+    "bs58": "^5.0.0",
+    "buffer": "^6.0.3"
+  }
+}
