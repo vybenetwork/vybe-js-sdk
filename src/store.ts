@@ -43,6 +43,6 @@ export async function storeAuthData(authData: AuthData) {
     const binstr = byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), '')
     const data = window.btoa(binstr)
     
-    window.localStorage.set(STORAGE_KEY, data)
+    window.localStorage.setItem(STORAGE_KEY, data)
   }
 }

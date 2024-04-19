@@ -1,12 +1,12 @@
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { BlockheightBasedTransactionConfirmationStrategy, Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { loadAuthData, storeAuthData } from "./store";
 import { isBrowser, resolver } from "./utils";
-import { AUTH_ENDPOINT, AUTH_MSG, AuthFailedError, CREDITS_PRICE_USDC, CreditPurchaseError, NotAuthenticatedError, PURCHASE_ENDPOINT, USDC_MINT, VYBE_WALLET } from "./constants";
+import { AUTH_ENDPOINT, AUTH_MSG, AuthFailedError, CREDITS_PRICE_USDC, CreditPurchaseError, InsufficientBalanceError, NotAuthenticatedError, PURCHASE_ENDPOINT, TxConfirmationError, USDC_MINT } from "./constants";
 import bs58 from 'bs58'
-import { BaseMessageSignerWalletAdapter, BaseSignerWalletAdapter, WalletNotConnectedError, WalletSendTransactionError } from "@solana/wallet-adapter-base";
-import { TOKEN_PROGRAM_ID, createTransferInstruction, getAssociatedTokenAddress } from "@solana/spl-token";
+import { Adapter, BaseMessageSignerWalletAdapter, BaseSignerWalletAdapter, WalletNotConnectedError, WalletSendTransactionError } from "@solana/wallet-adapter-base";
+import { checkTokenBalance, createCreditPurchaseInstruction, getSPLTokenAccount } from "./spl";
 
-interface Account {
+export interface Account {
   id: string // UUID,
   credits: number,
   key?: string,
@@ -24,6 +24,9 @@ async function sendAuthData(body: AuthRequest): Promise<Account> {
 
   const [err, data] = await resolver(isoFetch(AUTH_ENDPOINT, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(body)
   }))
 
@@ -32,14 +35,14 @@ async function sendAuthData(body: AuthRequest): Promise<Account> {
   return data?.json()
 }
 
-async function auth(adapter: BaseMessageSignerWalletAdapter): Promise<Account | AuthFailedError> {
-  if (!adapter.connected) return new AuthFailedError()
+async function auth(adapter: Adapter): Promise<Account> {
+  if (!adapter.connected || !adapter.publicKey) throw new AuthFailedError()
 
   const authData = await loadAuthData()
   const isAuthReq = (ar: Partial<AuthRequest>): ar is AuthRequest => Boolean(ar.pk && ar.msg && ar.sig)
   const requestBody: Partial<AuthRequest> = { msg: AUTH_MSG, pk: adapter.publicKey!.toBase58() }
 
-  if (authData && new PublicKey(authData.pk) === adapter.publicKey) {
+  if (authData && new PublicKey(authData.pk).equals(adapter.publicKey)) {
     requestBody.sig = authData.sig
 
     if (!authData.key) {
@@ -47,18 +50,16 @@ async function auth(adapter: BaseMessageSignerWalletAdapter): Promise<Account | 
     }
   } else {
     const input = Uint8Array.from(AUTH_MSG.split('').map((x) => x.charCodeAt(0)))
-    const output = await adapter.signMessage(input)
+    const output = await (adapter as BaseMessageSignerWalletAdapter).signMessage(input)
     requestBody.sig = bs58.encode(output)
     requestBody.generate = true
   }
 
-  if (!isAuthReq(requestBody)) return new AuthFailedError()
+  if (!isAuthReq(requestBody)) throw new AuthFailedError()
 
   const [err, resp] = await resolver(sendAuthData(requestBody))
 
-  if (err || !resp) {
-    return new AuthFailedError()
-  }
+  if (err || !resp) throw new AuthFailedError()
 
   await storeAuthData({
     pk: requestBody.pk,
@@ -66,43 +67,52 @@ async function auth(adapter: BaseMessageSignerWalletAdapter): Promise<Account | 
     key: authData?.key ?? resp.key!
   })
   
-  return resp
+  // return resp
+  return {
+    ...resp,
+    key: authData?.key ?? resp.key!
+  }
 }
 
-async function submitTx(adapter: BaseSignerWalletAdapter, connection: Connection): Promise<string> {
+async function submitTx(adapter: Adapter, connection: Connection): Promise<string> {
   if (!adapter.publicKey) throw new WalletNotConnectedError()
 
-  const toPk = new PublicKey(VYBE_WALLET)  
-  const mint = new PublicKey(USDC_MINT)
+  const senderTokenAccount = getSPLTokenAccount(adapter.publicKey, USDC_MINT)
+  const hasSufficientBalance = await checkTokenBalance(senderTokenAccount, CREDITS_PRICE_USDC, connection)
 
-  const fromUsdcAccount = await getAssociatedTokenAddress(mint, adapter.publicKey)
-  const toUsdcAccount = await getAssociatedTokenAddress(mint, toPk)
+  if (!hasSufficientBalance) throw new InsufficientBalanceError()
 
-  const tx = new Transaction()
-
-  // Check if the wallet has a USDC account.
-  // This will throw if they don't and the consumer should handle it.
-  await connection.getAccountInfo(fromUsdcAccount)
-
-  // Create the USDC transfer instruction
-  tx.add(
-    createTransferInstruction(
-      fromUsdcAccount,
-      toUsdcAccount,
-      adapter.publicKey,
-      CREDITS_PRICE_USDC,
-      [],
-      TOKEN_PROGRAM_ID
-    )
+  const tx = new Transaction().add(
+    createCreditPurchaseInstruction(adapter.publicKey, senderTokenAccount)
   )
 
+  const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized')
+  tx.recentBlockhash = blockhash
+  tx.feePayer = adapter.publicKey
+
+  console.log(blockhash, lastValidBlockHeight)
+
   // Sign the TX
-  await adapter.signTransaction(tx)
+  const signedTx = await (adapter as BaseSignerWalletAdapter).signTransaction(tx)
   // Submit the TX
-  const [err, sig] = await resolver(connection.sendRawTransaction(tx.serialize()))
+  const [err, txId] = await resolver(connection.sendRawTransaction(signedTx.serialize()))
   if (err) throw err
 
-  return sig!
+  console.log(txId)
+
+  const confirmationStrategy: BlockheightBasedTransactionConfirmationStrategy = {
+      signature: txId!,
+      blockhash,
+      lastValidBlockHeight
+  }
+
+  const [terr, confirmation] = await resolver(connection.confirmTransaction(confirmationStrategy, 'confirmed'))
+
+  if (terr || !confirmation || confirmation.value.err) {
+    throw new TxConfirmationError(terr?.message || confirmation?.value.err?.toString() || 'Tx confirmation failed.')
+  }
+
+  return txId!
 }
 
 async function processCreditPurchase(tx: String, generate = false): Promise<Account> {
@@ -110,6 +120,9 @@ async function processCreditPurchase(tx: String, generate = false): Promise<Acco
   
   const [err, resp] = await resolver(isoFetch(PURCHASE_ENDPOINT, {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify({ tx, generate })
   }))
 
@@ -134,14 +147,18 @@ const purchaseCreditsFactory = (connection: Connection)  => {
   }
 }
 
-interface VybeApi {
-  auth(signer: BaseMessageSignerWalletAdapter): Promise<Account | AuthFailedError>
-  purchaseCredits(adapter: BaseSignerWalletAdapter): Promise<Account | CreditPurchaseError | NotAuthenticatedError>
+export interface VybeApi {
+  auth(signer: Adapter): Promise<Account>
+  purchaseCredits(adapter: Adapter): Promise<Account>
 }
 
-export async function init(connection: Connection): Promise<VybeApi> {
+export function init(connection: Connection): VybeApi {
   return {
     auth,
     purchaseCredits: purchaseCreditsFactory(connection)
   }
+}
+
+export default {
+  init
 }

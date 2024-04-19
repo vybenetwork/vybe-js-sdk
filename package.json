@@ -2,7 +2,7 @@
   "name": "vybe-js-sdk",
   "version": "0.1.0",
   "description": "Access the Vybe API with Web3 enabled authentication.",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,6 +17,9 @@
     "Solana",
     "Web3",
     "API"
+  ],
+  "files": [
+    "dist/**/*"
   ],
   "author": "Vybe Network",
   "license": "MIT",
@@ -33,7 +36,7 @@
     "@solana/web3.js": "^1.91.4"
   },
   "dependencies": {
-    "@solana/spl-token": "^0.4.3",
-    "bs58": "^5.0.0"
+    "bs58": "^5.0.0",
+    "buffer": "^6.0.3"
   }
 }
