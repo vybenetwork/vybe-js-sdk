@@ -1,0 +1,38 @@
+{
+  "name": "@vybenetwork/core",
+  "version": "0.1.0",
+  "description": "Provides core functionality for the Vybe SDK",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vybenetwork/vybe-js-sdk.git"
+  },
+  "keywords": [
+    "Vybe",
+    "Network",
+    "Solana",
+    "Web3",
+    "API"
+  ],
+  "files": [
+    "dist/**/*"
+  ],
+  "author": "Vybe Network",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vybenetwork/vybe-js-sdk/issues"
+  },
+  "homepage": "https://github.com/vybenetwork/vybe-js-sdk#readme",
+  "peerDependencies": {
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/web3.js": "^1.91.4"
+  },
+  "dependencies": {
+    "bs58": "^5.0.0",
+    "buffer": "^6.0.3"
+  }
+}
