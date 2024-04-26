@@ -1,7 +1,8 @@
 {
-  "name": "@vybenetwork/root",
+  "name": "@vybenetwork/core",
   "version": "0.1.0",
-  "description": "Vybe JS/TS SDK.",
+  "description": "Provides core functionality for the Vybe SDK",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,18 +18,21 @@
     "Web3",
     "API"
   ],
+  "files": [
+    "dist/**/*"
+  ],
   "author": "Vybe Network",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/vybenetwork/vybe-js-sdk/issues"
   },
-  "homepage": "https://alpha.vybenetwork.com/api-plans",
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "lerna": "^8.1.2",
-    "typescript": "^5.4.5"
+  "homepage": "https://github.com/vybenetwork/vybe-js-sdk#readme",
+  "peerDependencies": {
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/web3.js": "^1.91.4"
   },
-  "workspaces": [
-    "packagees/*"
-  ]
+  "dependencies": {
+    "bs58": "^5.0.0",
+    "buffer": "^6.0.3"
+  }
 }
