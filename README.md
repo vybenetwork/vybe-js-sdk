@@ -6,5 +6,5 @@ coming soon...
 
 ## Development
 
-`npm run build:core` will build the core package.
-`npm run dev` in the root directory will start the react example application.
+- `npm run build:core` will build the core package.
+- `npm run dev` in the root directory will start the react example application.
