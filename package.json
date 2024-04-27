@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Vybe JS/TS SDK.",
   "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "lerna run dev --scope=react-example",
+    "build:core": "lerna run build --scope=@vybenetwork/core"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,7 @@
     "typescript": "^5.4.5"
   },
   "workspaces": [
-    "packagees/*"
+    "packages/*",
+    "examples/*"
   ]
 }

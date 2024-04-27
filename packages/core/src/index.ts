@@ -1,4 +1,4 @@
-import { BlockheightBasedTransactionConfirmationStrategy, ComputeBudgetProgram, Connection, PublicKey, SendOptions, Transaction, VersionedTransaction } from "@solana/web3.js";
+import { BlockheightBasedTransactionConfirmationStrategy, ComputeBudgetProgram, Connection, PublicKey, SendOptions, Transaction } from "@solana/web3.js";
 import { loadAuthData, storeAuthData } from "./store";
 import { isBrowser, resolver } from "./utils";
 import { AUTH_ENDPOINT, AUTH_MSG, AuthFailedError, CREDITS_PRICE_USDC, CreditPurchaseError, InsufficientBalanceError, NotAuthenticatedError, PURCHASE_ENDPOINT, TxConfirmationError, USDC_MINT } from "./constants";
