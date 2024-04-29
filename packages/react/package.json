@@ -2,8 +2,9 @@
   "name": "@vybenetwork/react",
   "version": "0.1.0",
   "description": "React integration of the Vybe SDK",
-  "main": "src/index.ts",
+  "main": "./dist/index.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -15,10 +16,20 @@
     "React",
     "SDK"
   ],
+  "files": [
+    "dist/**/*"
+  ],
   "author": "Vybe Network",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/vybenetwork/vybe-js-sdk/issues"
   },
-  "homepage": "https://github.com/vybenetwork/vybe-js-sdk#readme"
+  "homepage": "https://github.com/vybenetwork/vybe-js-sdk#readme",
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "dependencies": {
+    "@vybenetwork/core": "file:../core"
+  }
 }
