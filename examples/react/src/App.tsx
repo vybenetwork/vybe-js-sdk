@@ -1,6 +1,6 @@
 import vybeApi, { Account, VybeApi } from '@vybenetwork/core'
 import './App.css'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Connection } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
@@ -12,7 +12,7 @@ import "@solana/wallet-adapter-react-ui/styles.css"
 
 function App() {
   // console.log(process.env.RPC_URL)
-  const connection = new Connection(process.env.RPC_URL || '')
+  const connection = useMemo(() => new Connection(process.env.RPC_URL || ''), [])
   const { wallet, publicKey } = useWallet()
   const { setVisible } = useWalletModal()
   const [account, setAccount] = useState<Account | null>(null)
@@ -25,7 +25,7 @@ function App() {
     } else {
       wallet.adapter.connect()
     }
-  }, [wallet, publicKey])
+  }, [setVisible, wallet])
 
   useEffect(() => {
     if (wallet && !wallet.adapter.connected && !publicKey) {
@@ -37,7 +37,7 @@ function App() {
     if (connection && !vybe) {
       setVybe(vybeApi.init(connection))
     }
-  }, [connection, vybe])
+  }, [connection, vybe, setVybe])
 
   const vybeAuth = useCallback(async () => {
     if (vybe && wallet && wallet.adapter.connected) {
@@ -48,7 +48,7 @@ function App() {
         toast.error('Failed to authenticate')
       }
     }
-  }, [vybe, wallet, connection])
+  }, [vybe, wallet, setAccount])
 
   const vybePurchaseCredits = useCallback(async () => {
     if (vybe && account && wallet && wallet.adapter.connected) {
@@ -63,7 +63,7 @@ function App() {
         setIsLoading(false)
       }
     }
-  }, [vybe, wallet, publicKey, account])
+  }, [vybe, wallet, account, setIsLoading, setAccount])
 
   return (
     <main>

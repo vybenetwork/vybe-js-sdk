@@ -4,7 +4,9 @@
   "description": "Vybe JS/TS SDK.",
   "scripts": {
     "dev": "lerna run dev --scope=react-example",
-    "build:core": "lerna run build --scope=@vybenetwork/core"
+    "build:core": "lerna run build --scope=@vybenetwork/core",
+    "build:examples": "lerna run build --scope=react-example",
+    "build:all": "lerna run build"
   },
   "repository": {
     "type": "git",
