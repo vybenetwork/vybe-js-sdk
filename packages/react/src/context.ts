@@ -1,9 +1,9 @@
-import { createContext } from "react"
+import { createContext } from 'react'
 
-import { VybeContextAttrs } from "./types"
+import { VybeContextAttrs } from './types'
 
 const VybeContext = createContext<VybeContextAttrs>({
-  account: null
+  account: null,
 })
 
 export default VybeContext
