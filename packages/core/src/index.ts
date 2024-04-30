@@ -1,15 +1,39 @@
-import { BlockheightBasedTransactionConfirmationStrategy, ComputeBudgetProgram, Connection, PublicKey, SendOptions, Transaction } from "@solana/web3.js";
-import { loadAuthData, storeAuthData } from "./store";
-import { isBrowser, resolver } from "./utils";
-import { AUTH_ENDPOINT, AUTH_MSG, AuthFailedError, CREDITS_PRICE_USDC, CreditPurchaseError, InsufficientBalanceError, NotAuthenticatedError, PURCHASE_ENDPOINT, TxConfirmationError, USDC_MINT } from "./constants";
+import {
+  BlockheightBasedTransactionConfirmationStrategy,
+  ComputeBudgetProgram,
+  Connection,
+  PublicKey,
+  SendOptions,
+  Transaction,
+} from '@solana/web3.js'
+import { loadAuthData, storeAuthData } from './store'
+import { isBrowser, resolver } from './utils'
+import {
+  AUTH_ENDPOINT,
+  AUTH_MSG,
+  AuthFailedError,
+  CREDITS_PRICE_USDC,
+  CreditPurchaseError,
+  InsufficientBalanceError,
+  NotAuthenticatedError,
+  PURCHASE_ENDPOINT,
+  TxConfirmationError,
+  USDC_MINT,
+} from './constants'
 import bs58 from 'bs58'
-import { Adapter, BaseMessageSignerWalletAdapter, BaseSignerWalletAdapter, WalletNotConnectedError, WalletSendTransactionError } from "@solana/wallet-adapter-base";
-import { checkTokenBalance, createCreditPurchaseInstruction, getSPLTokenAccount } from "./spl";
+import {
+  Adapter,
+  BaseMessageSignerWalletAdapter,
+  BaseSignerWalletAdapter,
+  WalletNotConnectedError,
+  WalletSendTransactionError,
+} from '@solana/wallet-adapter-base'
+import { checkTokenBalance, createCreditPurchaseInstruction, getSPLTokenAccount } from './spl'
 
 export interface Account {
   id: string // UUID,
-  credits: number,
-  key?: string,
+  credits: number
+  key?: string
 }
 
 interface AuthRequest {
@@ -22,13 +46,15 @@ interface AuthRequest {
 async function sendAuthData(body: AuthRequest): Promise<Account> {
   const isoFetch = isBrowser ? fetch : () => Promise.reject('Node is not yet supported.') // support node
 
-  const [err, data] = await resolver(isoFetch(AUTH_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  }))
+  const [err, data] = await resolver(
+    isoFetch(AUTH_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+  )
 
   if (err) throw err
 
@@ -64,13 +90,13 @@ async function auth(adapter: Adapter): Promise<Account> {
   await storeAuthData({
     pk: requestBody.pk,
     sig: requestBody.sig,
-    key: authData?.key ?? resp.key!
+    key: authData?.key ?? resp.key!,
   })
-  
+
   // return resp
   return {
     ...resp,
-    key: authData?.key ?? resp.key!
+    key: authData?.key ?? resp.key!,
   }
 }
 
@@ -82,20 +108,18 @@ async function submitTx(adapter: Adapter, connection: Connection): Promise<strin
   const hasSufficientBalance = await checkTokenBalance(senderTokenAccount, CREDITS_PRICE_USDC, connection)
   if (!hasSufficientBalance) throw new InsufficientBalanceError()
 
-  const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({ 
-    units: 1000000
-  });
+  const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+    units: 1000000,
+  })
 
-  const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({ 
-    microLamports: 10000000
-  });
+  const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: 10000000,
+  })
 
   const tx = new Transaction()
     .add(modifyComputeUnits)
     .add(addPriorityFee)
-    .add(
-      createCreditPurchaseInstruction(adapter.publicKey, senderTokenAccount)
-    )
+    .add(createCreditPurchaseInstruction(adapter.publicKey, senderTokenAccount))
 
   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('finalized')
   tx.recentBlockhash = blockhash
@@ -107,9 +131,9 @@ async function submitTx(adapter: Adapter, connection: Connection): Promise<strin
 
   const sendOptions: SendOptions = {
     maxRetries: 2,
-    minContextSlot: (await connection.getSlot()),
+    minContextSlot: await connection.getSlot(),
     skipPreflight: false,
-    preflightCommitment: 'finalized'
+    preflightCommitment: 'finalized',
   }
 
   // Submit the TX
@@ -117,9 +141,9 @@ async function submitTx(adapter: Adapter, connection: Connection): Promise<strin
   if (err) throw err
 
   const confirmationStrategy: BlockheightBasedTransactionConfirmationStrategy = {
-      signature: txId!,
-      blockhash,
-      lastValidBlockHeight
+    signature: txId!,
+    blockhash,
+    lastValidBlockHeight,
   }
 
   const [terr, confirmation] = await resolver(connection.confirmTransaction(confirmationStrategy, 'confirmed'))
@@ -133,22 +157,24 @@ async function submitTx(adapter: Adapter, connection: Connection): Promise<strin
 
 async function processCreditPurchase(tx: String, generate = false): Promise<Account> {
   const isoFetch = isBrowser ? fetch : () => Promise.reject('Node is not yet supported.') // support node
-  
-  const [err, resp] = await resolver(isoFetch(PURCHASE_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ tx, generate })
-  }))
 
-  if (err || !resp ) throw new CreditPurchaseError()
-  
+  const [err, resp] = await resolver(
+    isoFetch(PURCHASE_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ tx, generate }),
+    })
+  )
+
+  if (err || !resp) throw new CreditPurchaseError()
+
   const account: Account = await resp.json()
   return account
 }
 
-const purchaseCreditsFactory = (connection: Connection)  => {
+const purchaseCreditsFactory = (connection: Connection) => {
   return async function purchaseCredits(adapter: BaseSignerWalletAdapter): Promise<Account> {
     const authData = await loadAuthData()
     if (!authData) throw new NotAuthenticatedError()
@@ -158,7 +184,7 @@ const purchaseCreditsFactory = (connection: Connection)  => {
 
     const [aerr, account] = await resolver(processCreditPurchase(tx, !authData.key))
     if (aerr || !account) throw new CreditPurchaseError()
-   
+
     return account
   }
 }
@@ -171,10 +197,10 @@ export interface VybeApi {
 export function init(connection: Connection): VybeApi {
   return {
     auth,
-    purchaseCredits: purchaseCreditsFactory(connection)
+    purchaseCredits: purchaseCreditsFactory(connection),
   }
 }
 
 export default {
-  init
+  init,
 }
