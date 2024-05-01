@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "description": "Vybe JS/TS SDK.",
   "scripts": {
-    "dev": "lerna run dev --scope=react-example",
+    "run:example": "lerna run dev --scope=react-example",
+    "build:core": "lerna run build --scope=@vybenetwork/core --stream",
+    "build:react": "lerna run build --scope=@vybenetwork/react --stream",
     "build:examples": "lerna run build --scope=react-example",
-    "build:core": "lerna run build --scope=@vybenetwork/core",
-    "build:react": "lerna run build --scope=@vybenetwork/react",
     "build:all": "lerna run build",
+    "watch:packages": "lerna watch --scope=\"@vybenetwork/{core,react}\" -- lerna run build --scope=\\$LERNA_PACKAGE_NAME",
+    "dev": "concurrently --names \"WATCH,EXAMPLE\" \"npm run watch:packages\" \"npm run run:example\"",
     "test:core": "lerna run test --scope=@vybenetwork/core",
     "test:react": "lerna run test --scope=@vybenetwork/react",
     "test:all": "lerna run test"
@@ -31,6 +33,7 @@
   "homepage": "https://alpha.vybenetwork.com/api-plans",
   "devDependencies": {
     "@types/node": "^20.12.7",
+    "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "lerna": "^8.1.2",
     "prettier": "^3.2.5",

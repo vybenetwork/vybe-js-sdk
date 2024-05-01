@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Connection } from '@solana/web3.js'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
-import { CgSpinnerTwo } from "react-icons/cg"
+import { CgSpinnerTwo } from 'react-icons/cg'
 import { Bounce, ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 
-import "@solana/wallet-adapter-react-ui/styles.css"
+import '@solana/wallet-adapter-react-ui/styles.css'
 
 function App() {
   // console.log(process.env.RPC_URL)
@@ -78,16 +78,15 @@ function App() {
             <div>API key: {account.key}</div>
           </div>
         )}
-        {isLoading
-          ? <CgSpinnerTwo className="spinner" />
-          : (
-            <div>
-              {!publicKey && <button onClick={connectWallet}>Connect Wallet</button>}
-              {publicKey && !account && <button onClick={vybeAuth}>Authenticate with Vybe</button>}
-              {publicKey && account && <button onClick={vybePurchaseCredits}>Purchase Credits</button>}
-            </div>
-          )
-        }
+        {isLoading ? (
+          <CgSpinnerTwo className="spinner" />
+        ) : (
+          <div>
+            {!publicKey && <button onClick={connectWallet}>Connect Wallet</button>}
+            {publicKey && !account && <button onClick={vybeAuth}>Authenticate with Vybe</button>}
+            {publicKey && account && <button onClick={vybePurchaseCredits}>Purchase Credits</button>}
+          </div>
+        )}
       </section>
       <ToastContainer
         position="bottom-right"

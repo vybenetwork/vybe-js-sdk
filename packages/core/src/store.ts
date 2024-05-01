@@ -20,7 +20,7 @@ export async function loadAuthData(): Promise<AuthData | null> {
       bytes[i] = binstr.charCodeAt(i)
     }
 
-    const jsonstr = new TextDecoder().decode(bytes)    
+    const jsonstr = new TextDecoder().decode(bytes)
 
     try {
       return JSON.parse(jsonstr)
@@ -42,7 +42,7 @@ export async function storeAuthData(authData: AuthData) {
 
     const binstr = byteArray.reduce((acc, byte) => acc + String.fromCharCode(byte), '')
     const data = window.btoa(binstr)
-    
+
     window.localStorage.setItem(STORAGE_KEY, data)
   }
 }
