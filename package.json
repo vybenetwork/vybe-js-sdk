@@ -9,7 +9,10 @@
     "build:examples": "lerna run build --scope=react-example",
     "build:all": "lerna run build",
     "watch:packages": "lerna watch --scope=\"@vybenetwork/{core,react}\" -- lerna run build --scope=\\$LERNA_PACKAGE_NAME",
-    "dev": "concurrently --names \"WATCH,EXAMPLE\" \"npm run watch:packages\" \"npm run run:example\""
+    "dev": "concurrently --names \"WATCH,EXAMPLE\" \"npm run watch:packages\" \"npm run run:example\"",
+    "test:core": "lerna run test --scope=@vybenetwork/core",
+    "test:react": "lerna run test --scope=@vybenetwork/react",
+    "test:all": "lerna run test"
   },
   "repository": {
     "type": "git",
