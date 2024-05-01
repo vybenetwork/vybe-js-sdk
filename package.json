@@ -7,7 +7,10 @@
     "build:examples": "lerna run build --scope=react-example",
     "build:core": "lerna run build --scope=@vybenetwork/core",
     "build:react": "lerna run build --scope=@vybenetwork/react",
-    "build:all": "lerna run build"
+    "build:all": "lerna run build",
+    "test:core": "lerna run test --scope=@vybenetwork/core",
+    "test:react": "lerna run test --scope=@vybenetwork/react",
+    "test:all": "lerna run test"
   },
   "repository": {
     "type": "git",
