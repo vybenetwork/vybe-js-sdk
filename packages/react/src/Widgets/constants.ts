@@ -1,6 +1,6 @@
 import { lazy } from 'react'
-import { VybeWidget } from 'src/types'
+import { VybeWidget } from '../types'
 
 export const widgetsMap = {
-  [VybeWidget.ReverseNFTSearch]: lazy(() => import('src/Widgets/ReverseNFTSearch/ReverseNFTSearch')),
+  [VybeWidget.ReverseNFTSearch]: lazy(() => import('./ReverseNFTSearch/ReverseNFTSearch')),
 }
