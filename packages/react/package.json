@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/vybenetwork/vybe-js-sdk#readme",
   "peerDependencies": {
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/web3.js": "^1.91.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

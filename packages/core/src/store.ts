@@ -35,6 +35,12 @@ export async function loadAuthData(): Promise<AuthData | null> {
   return null
 }
 
+export function clearAuthData() {
+  if (isBrowser) {
+    window.localStorage.removeItem(STORAGE_KEY)
+  }
+}
+
 export async function storeAuthData(authData: AuthData) {
   if (isBrowser) {
     const jsonstr = JSON.stringify(authData)
