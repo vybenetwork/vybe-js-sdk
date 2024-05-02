@@ -4,13 +4,16 @@ import App from './App.tsx'
 import './index.css'
 import { WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
+import VybeConnector from './VybeConnector.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <WalletProvider wallets={[]} autoConnect={false}>
       <WalletModalProvider>
-        <App />
+        <VybeConnector>
+          <App />
+        </VybeConnector>
       </WalletModalProvider>
     </WalletProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 )

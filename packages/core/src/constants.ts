@@ -14,10 +14,3 @@ export const AUTH_MSG = 'Please sign this message to authenticate with your Vybe
 export const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
 export const TOKEN_EXT_PROGRAM_ID = new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
 export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
-
-// Errors
-export class NotAuthenticatedError extends Error {}
-export class AuthFailedError extends Error {}
-export class CreditPurchaseError extends Error {}
-export class InsufficientBalanceError extends Error {}
-export class TxConfirmationError extends Error {}
