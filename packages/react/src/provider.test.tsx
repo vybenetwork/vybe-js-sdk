@@ -20,8 +20,8 @@ describe('<VybeProvider />', () => {
       </VybeProvider>
     )
 
-    const account = getByTestId('account-id')
+    const element = getByTestId('account-id')
     // todo: update when account is available
-    expect(account.textContent).toEqual('account id: ')
+    expect(element.textContent).toEqual('account id: ')
   })
 })

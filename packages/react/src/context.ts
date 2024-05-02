@@ -9,6 +9,7 @@ const VybeContext = createContext<VybeContextAttrs>({
   signOut: () => {},
   connection: null,
   executePurchaseCredits: (_: Adapter) => Promise.reject('Not implemented'),
+  availableWidgets: {},
 })
 
 export default VybeContext

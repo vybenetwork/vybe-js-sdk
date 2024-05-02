@@ -10,7 +10,8 @@ import {
 import { Adapter } from '@solana/wallet-adapter-base'
 
 import VybeContext from './context'
-import type { BaseConfig } from './types'
+import { AvailableWidgets, type BaseConfig } from './types'
+import { widgetsMap } from './Widgets/constants'
 
 export interface VybeProviderProps {
   children: ReactNode
@@ -39,6 +40,16 @@ const VybeProvider = ({ children, config, connection }: VybeProviderProps) => {
     [connection, account]
   )
 
+  const availableWidgets = useMemo(() => {
+    const ac: AvailableWidgets = {}
+    config?.widgets.forEach((widget) => {
+      if (widgetsMap[widget]) {
+        ac[widget] = widgetsMap[widget]
+      }
+    })
+    return ac
+  }, [config])
+
   const value = useMemo(
     () => ({
       account,
@@ -46,6 +57,7 @@ const VybeProvider = ({ children, config, connection }: VybeProviderProps) => {
       signOut,
       connection,
       executePurchaseCredits,
+      availableWidgets,
     }),
     [account, signIn, connection, purchaseCredits]
   )
