@@ -4,6 +4,5 @@
     "outDir": "./dist",
     "baseUrl": ".",
     "jsx": "react-jsx"
-  },
-  "include": ["src/**/*", "babel.config.js"]
+  }
 }

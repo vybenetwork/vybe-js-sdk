@@ -4,12 +4,13 @@
   "description": "Vybe JS/TS SDK.",
   "scripts": {
     "run:example": "lerna run dev --scope=react-example",
+    "run:widgets-server": "lerna run dev --scope=@vybenetwork/react",
     "build:core": "lerna run build --scope=@vybenetwork/core --stream",
     "build:react": "lerna run build --scope=@vybenetwork/react --stream",
     "build:examples": "lerna run build --scope=react-example",
-    "build:all": "lerna run build",
+    "build:all": "lerna run build --scope=@vybenetwork/core --scope=@vybenetwork/react",
     "watch:packages": "lerna watch --scope=\"@vybenetwork/{core,react}\" -- lerna run build --scope=\\$LERNA_PACKAGE_NAME",
-    "dev": "concurrently --names \"WATCH,EXAMPLE\" \"npm run watch:packages\" \"npm run run:example\"",
+    "dev": "npm run build:all && concurrently --names \"WATCH,EXAMPLE,WIDGETS\" \"npm run watch:packages\" \"npm run run:example\" \"npm run run:widgets-server\"",
     "test:core": "lerna run test --scope=@vybenetwork/core",
     "test:react": "lerna run test --scope=@vybenetwork/react",
     "test:all": "lerna run test"
@@ -32,6 +33,7 @@
   },
   "homepage": "https://alpha.vybenetwork.com/api-plans",
   "devDependencies": {
+    "@rollup/plugin-babel": "^6.0.4",
     "@types/node": "^20.12.7",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",

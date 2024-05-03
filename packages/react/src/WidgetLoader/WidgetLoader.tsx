@@ -1,26 +1,19 @@
-import { Suspense, useContext } from 'react'
-import VybeContext from 'src/context'
-import { VybeWidget, WidgetProps } from 'src/types'
+import { Suspense } from 'react'
+import { VybeWidget, WidgetProps } from '../types'
+import LazyLoader from './LazyLoader'
 
 interface WidgetLoaderProps extends WidgetProps {
   widget: (typeof VybeWidget)[keyof typeof VybeWidget]
 }
 
-const WidgetLoader = ({ widget, children, props }: WidgetLoaderProps) => {
-  const { availableWidgets } = useContext(VybeContext)
-
-  const Component = availableWidgets[widget]
-  if (!Component) {
-    return <div>Component not available</div>
-  }
-
-  return (
-    <div className="vybe-widget-loader">
-      <Suspense fallback={<div>Loading...</div>}>
-        <Component children={children} props={props || {}} />
-      </Suspense>
-    </div>
-  )
-}
+const WidgetLoader = ({ widget, children, props }: WidgetLoaderProps) => (
+  <div className="vybe-widget-loader">
+    <Suspense fallback={<div>Loading...</div>}>
+      <LazyLoader type={widget} props={{ ...props, title: widget }}>
+        {children}
+      </LazyLoader>
+    </Suspense>
+  </div>
+)
 
 export default WidgetLoader
