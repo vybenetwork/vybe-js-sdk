@@ -3,10 +3,12 @@ import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { Bounce, ToastContainer } from 'react-toastify'
 
+import Account from './Account'
+
 import 'react-toastify/dist/ReactToastify.css'
 import '@solana/wallet-adapter-react-ui/styles.css'
 import './App.css'
-import Account from './Account'
+import { VybeWidget, WidgetLoader } from '@vybenetwork/react'
 
 const App = () => {
   const { wallet, publicKey } = useWallet()
@@ -33,6 +35,9 @@ const App = () => {
         {!publicKey && <button onClick={connectWallet}>Connect Wallet</button>}
         {publicKey && wallet && <Account wallet={wallet} />}
       </header>
+      <section>
+        <WidgetLoader widget={VybeWidget.ReverseNFTSearch} />
+      </section>
       <ToastContainer
         position="bottom-right"
         autoClose={5000}

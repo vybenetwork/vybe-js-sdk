@@ -1,4 +1,4 @@
-import { WidgetProps } from 'src/types'
+import { WidgetProps } from '../../types'
 
 interface ReverseNFTSearchProps {
   title?: string

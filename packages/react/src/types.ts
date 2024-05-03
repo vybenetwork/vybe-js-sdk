@@ -8,7 +8,7 @@ export interface WidgetProps {
   props?: { [key: string]: any }
 }
 
-export type AvailableWidgets = Record<string, React.LazyExoticComponent<(props: WidgetProps) => JSX.Element>>
+export type AvailableWidgets = Record<string, React.LazyExoticComponent<any>>
 
 export interface VybeContextAttrs {
   account: Account | null
@@ -20,7 +20,7 @@ export interface VybeContextAttrs {
 }
 
 export enum VybeWidget {
-  ReverseNFTSearch = 'reverse-nft-search',
+  ReverseNFTSearch = 'ReverseNFTSearch',
 }
 
 export interface BaseConfig {
